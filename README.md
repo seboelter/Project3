@@ -36,7 +36,6 @@ I'm open to your thoughts, and my thoughts might change as I get into the code e
  IK obstacles 10
 
  Unless you really like 3D?  I don't really
- -------------
 
 Total is 90 pts
 
