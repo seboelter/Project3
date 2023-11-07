@@ -1,10 +1,19 @@
 //Inverse Kinematics
 //CSCI 5611 
-
+//Use this tutorial to better understand the translate() function
+//http://btk.tillnagel.com/tutorials/rotation-translation-matrix.html
+//camera
+Camera mainCamera;
 void setup(){
-  size(800,800);
+  size(800,800,P3D);
   surface.setTitle("Inverse Kinematics");
+  mainCamera = new Camera();
+  mainCamera.position = new PVector(300, 400, 1000);
+  //background(100);  
+  lights();
 }
+//sphere
+Vec2 ball = new Vec2(200,200);
 
 //Root
 Vec2 root = new Vec2(400,400);
@@ -57,7 +66,6 @@ void solve(){
     a2 += angleDiff;
   else
     a2 -= angleDiff;
-  /*TODO: Wrist joint limits here*/
   fk(); //Update link positions with fk (e.g. end effector changed)
   
   
@@ -82,10 +90,10 @@ void solve(){
   dotProd = dot(startToGoal.normalized(),startToEndEffector.normalized());
   dotProd = clamp(dotProd,-1,1);
   angleDiff = acos(dotProd);
-  if (cross(startToGoal,startToEndEffector) < 0)
-    a0 += angleDiff;
-  else
-    a0 -= angleDiff;
+  //if (cross(startToGoal,startToEndEffector) > 0)
+  //  //a0 -= angleDiff;
+  //else
+  //  a0 += angleDiff;
   /*TODO: Shoulder joint limits here*/
   fk(); //Update link positions with fk (e.g. end effector changed)
  
@@ -105,31 +113,67 @@ void draw(){
   solve();
   
   background(250,250,250);
+  mainCamera.Update(1.0/frameRate);
+  pointLight(255, 255, 255, 300, 400, 800);
   
-
+  noStroke();
   fill(50,130,200);
   pushMatrix();
-  translate(root.x,root.y);
-  rotate(a0);
-  rect(0, -armW/2, l0, armW, 100);
+  translate(root.x-l1/2,root.y-10, 0);
+  rotate(a0); 
+  translate(l1/2,10, 0);
+  //rect(0, -armW/2, l0, armW, 100);
+  box(l0, armW, armW);
   popMatrix();
   
   pushMatrix();
-  translate(start_l1.x,start_l1.y);
+  translate(start_l1.x-l1/2,start_l1.y-10, 0);
   rotate(a0+a1);
-  rect(0, -armW/2, l1, armW, 100);
+  translate(l1/2,10, 0);
+  box(l1, armW, armW);
+  //rect(0, -armW/2, l1, armW, 100);
   popMatrix();
   
   pushMatrix();
-  translate(start_l2.x,start_l2.y);
+  translate(start_l2.x-l2/2,start_l2.y-10, 0);
   rotate(a0+a1+a2);
-  rect(0, -armW/2, l2, armW, 100);
+  translate(l2/2,10, 0);
+  box(l2, armW, armW);
+  //rect(0, -armW/2, l2, armW, 100);
   popMatrix();
   
   pushMatrix();
-  translate(start_l3.x,start_l3.y);
+  translate(start_l3.x-l3/2,start_l3.y-10, 0);
   rotate(a0+a1+a2+a3);
-  rect(0, -armW/2, l3, armW, 100);
+  translate(l3/2,10, 0);
+  box(l3, armW, armW);
   popMatrix();
   
+  //fill(10,0,0); //Goal/mouse
+  //pushMatrix();
+  //translate(ball.x,ball.y,0);
+  //sphere(30);
+  //popMatrix();
+  
+}
+
+void keyPressed() {
+      //if (key == 'u') {
+      //  ball.x = ball.y-10;
+      
+      //} else if (key == 'h') {
+      //  ball.y = ball.x-10;
+
+      //} else if (key == 'k' ) {
+      //  ball.y = ball.y+10;
+
+      //} else if (key == 'j') {
+      //  ball.x = ball.x+10;
+
+      //}
+    mainCamera.HandleKeyPressed();
+}
+
+void keyReleased() {
+    mainCamera.HandleKeyReleased();
 }
