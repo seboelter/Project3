@@ -37,9 +37,9 @@ public class Vec3 {
   //  y -= rhs.y;
   //}
   
-  //public Vec2 times(float rhs){
-  //  return new Vec2(x*rhs, y*rhs);
-  //}
+  public Vec3 times(float rhs){
+    return new Vec3(x*rhs, y*rhs, z+rhs);
+  }
   
   //public void mul(float rhs){
   //  x *= rhs;

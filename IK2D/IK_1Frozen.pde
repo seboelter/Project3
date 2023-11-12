@@ -4,13 +4,13 @@
 
 
 //Root
-Vec2 root = new Vec2(50,50);
-Vec2 endPoint;
+Vec3 root = new Vec3(50,50,50);
+Vec3 endPoint;
 
 // Generalize
 static int LINKS = 4;
 float[] angles = new float[LINKS];
-Vec2[] starts = new Vec2[LINKS];
+Vec3[] starts = new Vec3[LINKS];
 
 // Lengths
 float[] lengths = new float[LINKS];
@@ -39,7 +39,7 @@ void setup(){
   size(1000,700,P3D);
   surface.setTitle("Inverse Kinematics");
   mainCamera = new Camera();
-  mainCamera.position = new PVector(300, 400, 1000);
+  mainCamera.position = new PVector(300, 400, 500);
   //background(100);  
   lights();
   
@@ -50,7 +50,7 @@ void setup(){
     lengths[i] = lengths[i-1] - arm_decr;
     
     float curr_angle = random(-PI, PI);
-    Vec2 direction = new Vec2(cos(curr_angle)*lengths[i], sin(curr_angle)*lengths[i]);
+    Vec3 direction = new Vec3(cos(curr_angle)*lengths[i], sin(curr_angle)*lengths[i], 0);
     starts[i] = direction.plus(starts[i-1]);
   }
     
@@ -65,10 +65,14 @@ void draw(){
   
   background(255,255,255);
   mainCamera.Update(1.0/frameRate);
+  pointLight(255, 255, 255, 300, 400, 800);
+  
+  
+  drawGrid();
   
   fill(180,20,40); //Root
   pushMatrix();
-    translate(root.x,root.y);
+    translate(root.x,root.y,root.z);
     rect(-20,-20,40,40);
   popMatrix();
   
@@ -77,26 +81,15 @@ void draw(){
   strokeWeight(5);
   for (int i = 0; i < LINKS; i++) 
   {
-    //float curr_angle = 0;
-    //for (int j = 0; j <= i; j++) 
-    //  curr_angle += angles[j];
-    strokeWeight(20-5*i);
-    if (i == LINKS - 1)
-      line(starts[i].x, starts[i].y, 0, endPoint.x, endPoint.y, 0);
-    else
-      line(starts[i].x, starts[i].y, 0, starts[i+1].x, starts[i+1].y, 0);
-    
-    //pushMatrix();
-    //  translate(starts[i].x, starts[i].y);      
-    //  rotate(curr_angle);
-    //  quad(0, -armW/2, lengths[i], -.1*armW, lengths[i], .1*armW, 0, armW/2);
-    //popMatrix();
+    strokeWeight(30-5*i);
+    Vec3 toPoint = (i == LINKS-1)? endPoint : starts[i+1];
+    line(starts[i].x, starts[i].y, starts[i].z, toPoint.x, toPoint.y, toPoint.z);
   }
   
   
   fill(0,0,0); //Goal/mouse
   pushMatrix();
-    translate(mouseX,mouseY);
+    translate(mouseX,mouseY,-100);
     sphere(30);
   popMatrix();
   
@@ -109,4 +102,25 @@ void keyPressed() {
 
 void keyReleased() {
   mainCamera.HandleKeyReleased();
+}
+
+
+
+
+
+
+
+
+
+
+int gridSize = 10;
+int gridSpacing = 50;
+
+void drawGrid() {
+  stroke(150);
+  strokeWeight(1);
+  for (int i = -gridSize; i <= gridSize; i++) {
+    line(i * gridSpacing, -gridSize * gridSpacing, 0, i * gridSpacing, gridSize * gridSpacing, 0);
+    line(-gridSize * gridSpacing, i * gridSpacing, 0, gridSize * gridSpacing, i * gridSpacing, 0);
+  }
 }

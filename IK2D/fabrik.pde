@@ -1,20 +1,20 @@
 // Returns a point that len distance away from the goal
-Vec2 next(Vec2 goal, Vec2 point, float len) {
+Vec3 next(Vec3 goal, Vec3 point, float len) {
   // Point to goal vector
-  Vec2 p2g = goal.minus(point);
+  Vec3 p2g = goal.minus(point);
   
   // Getting the direction only
-  Vec2 p2g_dir = p2g.normalized();
+  Vec3 p2g_dir = p2g.normalized();
   
   // Direction vector of appropriate length
-  Vec2 arm = p2g_dir.times(len);
+  Vec3 arm = p2g_dir.times(len);
   
   // Goal vector minus arm vector gives the start point (vector) of the arm
   return goal.minus(arm);
 }
 
 
-void fabrik(Vec2 goal) {
+void fabrik(Vec3 goal) {
   endPoint = goal;
   
   for (int i = LINKS-1; i > 0; i--) {
