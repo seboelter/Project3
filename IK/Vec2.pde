@@ -64,7 +64,9 @@ public class Vec2 {
     x /= magnitude;
     y /= magnitude;
   }
-  
+  public float lengthSqr(){
+    return x*x+y*y;
+  }
   public Vec2 normalized(){
     float magnitude = sqrt(x*x + y*y);
     return new Vec2(x/magnitude, y/magnitude);
