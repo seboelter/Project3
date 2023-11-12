@@ -1,5 +1,7 @@
 
 
+
+
 void ik(Vec2 goal, int i) 
 {
   Vec2 startToGoal = goal.minus(starts[i]);
@@ -21,8 +23,7 @@ void ik(Vec2 goal, int i)
   float maxAngle = PI/2;
   
   // Shoulder joint (0th element) angle restriction
-  if (i == 0) 
-    minAngle = 0;
+  //if (i == 0) minAngle = 0;
   
   angles[i] = clamp(angles[i], minAngle, maxAngle);
 }
@@ -49,11 +50,17 @@ void fk(){
 void solve(){
   Vec2 goal = new Vec2(mouseX, mouseY);
   
-  for (int j = LINKS-1; j >= 0; j--){
-    ik(goal, j);
-    fk(); //Update link positions with fk (e.g. end effector changed)
-    //print("\tAngle", j, ":", angles[j]);
-  }
+  //for (int j = LINKS-1; j >= 0; j--){
+  //  ik(goal, j);
+  //  fk(); //Update link positions with fk (e.g. end effector changed)
+  //  //print("\tAngle", j, ":", angles[j]);
+  //}
+  for (int i = 0; i < 5; i++)
+    fabrik(goal);
+  
+  
+  
+  
   println();
   
   //println("Angle 0:",nf(a0,1,2),"Angle 1:",nf(a1,1,2),"Angle 2:",nf(a2,1,2));
