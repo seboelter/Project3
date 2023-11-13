@@ -40,9 +40,11 @@ float a3_left = 0.3; //finger joint
 
 Vec2 start_l1, start_l2, start_l2_left,start_l3, start_l3_left,endPoint, endPoint_left;
 Vec2 obstacle = new Vec2 (670, 250);
+Vec2 obstacle1 = new Vec2 (150, 250);
 int obstacleR = 50;
-float old_a3_left, old_a2_left;
+float old_a3_left, old_a2_left, old_a3, old_a2;
 Boolean a3_left_bool = false;
+Boolean a3_bool = false;
   
 void armCircleCollision(Vec2 start,Vec2 end){
   Vec2 v = end.minus(start);
@@ -52,7 +54,7 @@ void armCircleCollision(Vec2 start,Vec2 end){
   ////Solve quadratic equation for intersection point (in terms of l_dir and toCircle)
   float a = 1;  //Lenght of l_dir (we noramlized it)
   float b = -2*dot(v,toCircle); //-2*dot(l_dir,toCircle)
-  float c = toCircle.lengthSqr() - (10+obstacleR/2)*(10+obstacleR/2); //different of squared distances
+  float c = toCircle.lengthSqr() - (11+obstacleR/2)*(12+obstacleR/2); //different of squared distances
   
   float d = b*b - 4*a*c; //discriminant 
   if (d >=0 ){ 
@@ -77,7 +79,41 @@ void armCircleCollision(Vec2 start,Vec2 end){
 
 }
 
+void armCircleCollision2(Vec2 start,Vec2 end){
+  Vec2 v = end.minus(start);
+  float v_len = v.length();
+  v.normalize(); //Save the distance of the line
+  Vec2 toCircle = obstacle1.minus(start);
+  ////Solve quadratic equation for intersection point (in terms of l_dir and toCircle)
+  float a = 1;  //Lenght of l_dir (we noramlized it)
+  float b = -2*dot(v,toCircle); //-2*dot(l_dir,toCircle)
+  float c = toCircle.lengthSqr() - (11+obstacleR/2)*(11+obstacleR/2); //different of squared distances
+  
+  float d = b*b - 4*a*c; //discriminant 
+  if (d >=0 ){ 
+  //    //If d is positive we know the line is colliding, but we need to check if the collision line within the line segment
+  //    //  ... this means t will be between 0 and the lenth of the line segment
+      float t1 = (-b - sqrt(d))/(2*a); //Optimization: we only take the first collision [is this safe?]
+  //    //println(hit.t,t1,t2);
+  if (t1>0 && t1 < v_len){
+    println("collision");
+      a3_bool = true;
+    } 
+  else{
+    println("not collision");
+     a3_bool = false;
+    }
+    }
+   else{
+   println("not collision");
+   a3_bool =false;
+   }
+
+
+}
+
 void solve(){
+
   old_a3_left = a3_left;
   Vec2 goal = new Vec2(mouseX, mouseY);
   
@@ -118,29 +154,30 @@ void solve(){
 
   
   //Update finger joint 2
+  a3 = old_a3;
   startToGoal = goal.minus(start_l3);
   startToEndEffector = endPoint.minus(start_l3);
   dotProd = dot(startToGoal.normalized(),startToEndEffector.normalized());
   dotProd = clamp(dotProd,-1,1);
   angleDiff = acos(dotProd);
-  // do {
-  //  if (cross(startToGoal,startToEndEffector) < 0)
-  //    a3 += angleDiff;
-  //  else
-  //    a3 -= angleDiff;
-  //  fk(); //Update link positions with fk (e.g. end effector changed)
-  //  angleDiff *= -.5; //Shrink angle difference and try again if there is a collision
-  //} while (armCircleCollision(start_l3));
+  armCircleCollision2(start_l3, endPoint);
+  if(a3_bool == true){//while (armCircleCollision(start_l3_left, endPoint_left))
+    if (cross(startToGoal,startToEndEffector) < 0)
+      a3 = old_a3;
+    else
+      a3 = old_a3;
+    fk(); //Update link positions with fk (e.g. end effector changed)
+    armCircleCollision2(start_l3, endPoint);
+    fk();
+  }
+  else{
   if (cross(startToGoal,startToEndEffector) < 0)
     a3 += angleDiff;
   else
     a3 -= angleDiff;  
-  if(a3 > 1)
-    a3 = 1;
-  if(a3 <0)
-    a3 = 0;
-  /*TODO: Finger joint limits here*/
-  fk(); //Update link positions with fk (e.g. end effector changed)
+  fk();
+  }
+  fk();
 
   
   //Update wrist joint
@@ -187,30 +224,37 @@ else{
 //}
   
   //Update wrist joint 2
+  old_a2 = a2;
   startToGoal = goal.minus(start_l2);
   startToEndEffector = endPoint.minus(start_l2);
   dotProd = dot(startToGoal.normalized(),startToEndEffector.normalized());
   dotProd = clamp(dotProd,-1,1);
   angleDiff = acos(dotProd);
+  armCircleCollision2(start_l2, start_l3);
+  if(a3_bool ==true){//while (armCircleCollision(start_l3_left, endPoint_left))
+    if (cross(startToGoal,startToEndEffector) < 0)
+      a2 = old_a2;
+    else
+      a2 = old_a2;
+    fk(); //Update link positions with fk (e.g. end effector changed)
+    //armCircleCollision(start_l2_left, start_l3_left);
+    armCircleCollision2(start_l2, start_l3);
+    fk();
+  }
+else{
   if (cross(startToGoal,startToEndEffector) < 0)
     a2 += angleDiff;
   else
     a2 -= angleDiff;
   //Joint Limits
-  if(a2 > -0)
-    a2 = -0;
-  if(a2 <-.5)
-      a2 = -.5;
-    fk(); //Update link positions with fk (e.g. end effector changed)
-  // do {
-  //  if (cross(startToGoal,startToEndEffector) < 0)
-  //    a2 += angleDiff;
-  //  else
-  //    a2 -= angleDiff;
-  //  fk(); //Update link positions with fk (e.g. end effector changed)
-  //  angleDiff *= .5; //Shrink angle difference and try again if there is a collision
-  //} while (armCircleCollision(start_l2));
-
+  //if(a2_left > 1)
+  //  a2_left =1;
+  //if(a2_left <-.5)
+  //  a2_left = -.5;
+ fk();
+   }//Update link positions with fk (e.g. end effector changed)
+   fk();
+//}
   
   
   
@@ -325,6 +369,8 @@ void draw(){
   
   pushMatrix();
   circle(obstacle.x, obstacle.y, obstacleR);
+  circle(obstacle1.x, obstacle1.y, obstacleR);
   popMatrix();
+  
   
 }
