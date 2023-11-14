@@ -2,16 +2,16 @@
 //CSCI 5611 
 
 void setup(){
-  size(800,800);
+  size(1000,800);
   surface.setTitle("Inverse Kinematics");
 }
 
 //Root
-Vec2 root = new Vec2(400,400);
+Vec2 root = new Vec2(500,550);
 
 //Upper Arm
 float l0 = 100; 
-float a0 = -1.1; //Shoulder joint
+float a0 = -1.5; //Shoulder joint
 
 //Lower Arm
 float l1 = 100;
@@ -44,10 +44,13 @@ float a2_old;
 float a2_left_old;
 float a3_old;
 float a3_left_old;
-Vec2 obstacle = new Vec2(600, 350);
-int obstacleR = 30;
-Vec2 start_l1, start_l2, start_l2_left,start_l3, start_l3_left,endPoint, endPoint_left;
+Vec2 obstacle = new Vec2(670, 270);
+int obstacleR = 35;
 
+Vec2 obstacle2 = new Vec2(230, 400);
+int obstacle2R = 35;
+Vec2 start_l1, start_l2, start_l2_left,start_l3, start_l3_left,endPoint, endPoint_left;
+float ex,why,zee;
 Boolean armCircleCollisionLeft(){
 if(armCircleCollisionHelper(root, start_l1)== true || 
 armCircleCollisionHelper(start_l1, start_l2_left)== true ||
@@ -60,10 +63,10 @@ else
 }
 
 Boolean armCircleCollision(){
-if(armCircleCollisionHelper(root, start_l1)== true || 
-armCircleCollisionHelper(start_l1, start_l2)== true || 
-armCircleCollisionHelper(start_l2, start_l3)== true ||
-armCircleCollisionHelper(start_l3, endPoint)== true){
+if(armCircleCollisionHelper2(root, start_l1)== true || 
+armCircleCollisionHelper2(start_l1, start_l2)== true || 
+armCircleCollisionHelper2(start_l2, start_l3)== true ||
+armCircleCollisionHelper2(start_l3, endPoint)== true){
   return true;
 }
 else
@@ -84,21 +87,49 @@ Boolean armCircleCollisionHelper(Vec2 start,Vec2 end){
   if (d >=0 ){ 
       float t1 = (-b - sqrt(d))/(2*a); //Optimization: we only take the first collision [is this safe?]
   if (t1>0 && t1 < v_len){
-    println("collision");
       return true;
     } 
   else{
-    println("not collision");
      return false;
     }
     }
    else{
-   println("not collision");
    return false;
    }
 
 
 }
+
+Boolean armCircleCollisionHelper2(Vec2 start,Vec2 end){
+  Vec2 v = end.minus(start);
+  float v_len = v.length();
+  v.normalize(); //Save the distance of the line
+  Vec2 toCircle = obstacle2.minus(start);
+  ////Solve quadratic equation for intersection point (in terms of l_dir and toCircle)
+  float a = 1;  //Lenght of l_dir (we noramlized it)
+  float b = -2*dot(v,toCircle); //-2*dot(l_dir,toCircle)
+  float c = toCircle.lengthSqr() - (10+obstacle2R)*(10+obstacle2R); //different of squared distances
+  
+  float d = b*b - 4*a*c; //discriminant 
+  if (d >=0 ){ 
+      float t1 = (-b - sqrt(d))/(2*a); //Optimization: we only take the first collision [is this safe?]
+  if (t1>0 && t1 < v_len){
+      return true;
+    } 
+  else{
+     return false;
+    }
+    }
+   else{
+   return false;
+   }
+
+
+}
+
+
+
+
 
 void solve(){
   //reset all variables at start in case we need to retract
@@ -133,10 +164,10 @@ void solve(){
       fk(); //Update link positions with fk (e.g. end effector changed)
       angleDiff *= .5; //Shrink angle difference and try again if there is a collision
   } while (armCircleCollisionLeft());
-  if(a3_left > 1)
-      a3_left = 1;
-  if(a3_left <-.5)
-    a3_left = -.5; 
+  //if(a3_left > 1)
+  //    a3_left = 1;
+  //if(a3_left <-.5)
+  //  a3_left = -.5; 
     fk(); 
     
   
@@ -161,10 +192,10 @@ void solve(){
       fk(); //Update link positions with fk (e.g. end effector changed)
       angleDiff *= .5; //Shrink angle difference and try again if there is a collision
   } while (armCircleCollision());
-  if(a3 > -.2)
-      a3 = -.2;
-  if(a3 <-.5)
-    a3 = -.5; 
+  //if(a3 > 1)
+  //    a3 = 1;
+  //if(a3 <-.5)
+  //  a3 = -.5; 
     fk();
   
   
@@ -188,8 +219,8 @@ void solve(){
       fk(); //Update link positions with fk (e.g. end effector changed)
       angleDiff *= .5; //Shrink angle difference and try again if there is a collision
   } while (armCircleCollisionLeft());
-  if(a2_left > 1)
-      a2_left = 1;
+  if(a2_left > 1.5)
+      a2_left = 1.5;
   if(a2_left <-.5)
     a2_left = -.5; 
     fk();
@@ -215,10 +246,10 @@ void solve(){
       fk(); //Update link positions with fk (e.g. end effector changed)
       angleDiff *= .5; //Shrink angle difference and try again if there is a collision
   } while (armCircleCollision());
-  if(a2 > -.2)
-      a2 = -.2;
-  if(a2 <-.5)
-    a2 = -.5; 
+  if(a2 > -2)
+      a2 = -2;
+  if(a2 <-1.5)
+    a2 = -1.5; 
     fk();
   
   
@@ -256,6 +287,7 @@ void solve(){
   if(a1 <-.5)
     a1 = -.5; 
     fk();
+    
 
   
   
@@ -280,12 +312,20 @@ void solve(){
       fk(); //Update link positions with fk (e.g. end effector changed)
       angleDiff *= .5; //Shrink angle difference and try again if there is a collision
   } while (armCircleCollision());
-  if(a0 > -.8)
-      a0 = -.8;
-  if(a0 <-1.5)
-    a0 = -1.5; 
+  if(a0 > -1.5)
+      a0 = -1.5;
+  if(a0 <-1.8)
+    a0 = -1.8; 
   fk(); //Update link positions with fk (e.g. end effector changed) 
   println("Angle 0:",a0,"Angle 1:",a1,"Angle 2:",a2,"Angle 3:", a3);
+  
+ if (endPoint.distanceTo(goal) < 11 || endPoint_left.distanceTo(goal)<11) {
+         ex = random(20, 200); 
+         why = random(20, 200); 
+         zee = random(20, 200); 
+      }
+  
+  
 }
 
 void fk(){
@@ -348,5 +388,11 @@ void draw(){
   circle(obstacle.x, obstacle.y, obstacleR*2);
   popMatrix();
   
+  pushMatrix();
+  circle(obstacle2.x, obstacle2.y, obstacle2R*2);
+  popMatrix();
   
+  fill(int(ex),int(why),int(zee));
+  circle(mouseX, mouseY,20);
+
 }
