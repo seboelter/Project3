@@ -18,20 +18,6 @@ float start_arm_length = 200;
 float arm_decr = 40;
 
 
-//class Arm {
-//  Vec2 start, end;
-//  Arm prev, next;
-  
-//  Arm(Vec2 start, Vec2 end) {
-//    this.start = start;
-//    this.end = end;
-//  }
-//}
-
-
-
-
-
 // Camera
 Camera mainCamera;
 
@@ -89,7 +75,7 @@ void draw(){
   
   fill(0,0,0); //Goal/mouse
   pushMatrix();
-    translate(mouseX,mouseY,-100);
+    translate(mouseX,mouseY,0);
     sphere(30);
   popMatrix();
   

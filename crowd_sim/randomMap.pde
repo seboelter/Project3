@@ -1,18 +1,20 @@
 // Returns a random position
 Vec2 getRandomPosition() {
-  return new Vec2(random(agentRad*1.5, width-agentRad*1.5), random(agentRad*1.5, height-agentRad*1.5));
+  return new Vec2(random(agentRad*1.5, width-agentRad*1.5), random(agentRad*4, height-agentRad*1.5));
 }
+
+int MIN_DISTANCE_SCALER = 4;
 
 // Returns whether a given position is an agent's starting or goal position
 boolean unusedPosition(Vec2 pos) 
 {
   for (int i = 0; i < agentCount; i++) {
-    if (pos.distanceTo(agentPos[i]) < 3 * agentRad)
+    if (pos.distanceTo(agentPos[i]) < MIN_DISTANCE_SCALER * agentRad)
       return false;
   }
       
   for (int i = 0; i < goalCount; i++) {
-    if (pos.distanceTo(goalPos[i]) < 4 * agentRad)
+    if (pos.distanceTo(goalPos[i]) < MIN_DISTANCE_SCALER * agentRad)
       return false;
   }
   

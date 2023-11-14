@@ -1,4 +1,4 @@
-static int maxNumAgents = 25;
+static int maxNumAgents = 30;
 int numAgents = 15;
 int obstacles = maxNumAgents - numAgents;
 
@@ -9,7 +9,7 @@ int goalCount = 0;
 float k_goal = 30;
 float k_avoid = 500;
 float agentRad = 10;
-float goalSpeed = 150;
+float goalSpeed = 100;
 
 
 float sensingRadius = agentRad * 200;
@@ -28,7 +28,7 @@ Vec2[] goalPos = new Vec2[maxNumAgents];
 
 
 void setup(){
-  size(850,650,P3D);
+  size(850,650,P2D);
   reset();
 }
 
@@ -87,7 +87,9 @@ void draw(){
    
   fill(0);
   textSize(18);
-  text("r: reset    space: resume/pause", width/2, 20);
+  text("r: reset         space: resume/pause", width/2, 20);
+  stroke(2);
+  line(0, 30, width, 30);
   
   //Update agent if not paused
   if (!paused){
@@ -95,22 +97,34 @@ void draw(){
   }
  
   //Draw orange goal rectangle
-  fill(255,150,50);
-  text("Goals", 10, 20);
+  fill(0); text("Goals", 30, 20);
+  fill(255,150,50); 
+  rect(5, 5, 20, 20);
   for (int i = 0; i < numAgents; i++){
     rect(goalPos[i].x-10, goalPos[i].y-10, 20, 20);
   }
  
   //Draw the green agents
-  fill(20,200,150);
-  text("Agents", 10, 50);
+  fill(0); text("Agents", 115, 20);
+  fill(20,200,150); 
+  circle(100, 15, 20);
   for (int i = 0; i < numAgents; i++){
+    // Draw agents and arrows
+    strokeWeight(0.1);
+    fill(20,200,150);
     circle(agentPos[i].x, agentPos[i].y, agentRad*2*radiusScaler);
+    drawArrowHead(agentPos[i], goalPos[i]);
+    
+    // Draw lines to show agents path to goal
+    strokeWeight(2);
+    stroke(50, 50, 50, 30);
+    line(agentPos[i].x, agentPos[i].y, goalPos[i].x, goalPos[i].y);
   }
   
   //Draw the red agents
-  fill(200,30,30);
-  text("Obstacles", 10, 80);
+  fill(0); text("Obstacles", 10+200, 20);
+  fill(200,30,30); 
+  circle(195, 15, 20);
   for (int i = numAgents; i < maxNumAgents; i++){
     circle(agentPos[i].x, agentPos[i].y, agentRad*2*radiusScaler);
   }
@@ -121,4 +135,27 @@ void draw(){
 void keyPressed(){
   if (key == ' ') paused = !paused;
   if (key == 'r') resetMap = !resetMap;
+}
+
+
+// To show orientation
+void drawArrowHead(Vec2 start, Vec2 end) {
+  
+  float arrowSize = agentRad*1.1;
+  Vec2 dir = end.minus(start);
+  
+  // Once goal is reached don't draw arrow
+  if (dir.length() < 2) return;
+  
+  float angle = getAngle(dir);
+  float halfAngle = PI / 10;
+  
+  float x1 = start.x - arrowSize * cos(angle - halfAngle);
+  float y1 = start.y - arrowSize * sin(angle - halfAngle);
+
+  float x2 = start.x - arrowSize * cos(angle + halfAngle);
+  float y2 = start.y - arrowSize * sin(angle + halfAngle);
+  
+  fill(0);
+  triangle(start.x, start.y, x1, y1, x2, y2);
 }

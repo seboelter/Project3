@@ -56,7 +56,8 @@ Vec2 computeAgentForces(int id){
 
 
 //Update agent positions & velocities based acceleration
-void moveAgent(float dt){
+void moveAgent(float dt)
+{  
   // Precompute all the neighbors
   updateNeighbors();
   
@@ -64,6 +65,7 @@ void moveAgent(float dt){
   for (int i = 0; i < maxNumAgents; i++){
     agentAcc[i] = computeAgentForces(i);
   }
+
   //Update position and velocity using (Eulerian) numerical integration
   for (int i = 0; i < maxNumAgents; i++){
     agentVel[i].add(agentAcc[i].times(dt));
