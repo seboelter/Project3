@@ -1,36 +1,23 @@
 static int maxNumAgents = 30;
-int numAgents = 15;
+static int numAgents = 15;
 int obstacles = maxNumAgents - numAgents;
 
-int agentCount = 0;
-int goalCount = 0;
+
+static int numBoxes = 2;
+Box[] boxes = new Box[numBoxes];
 
 
-float k_goal = 30;
-float k_avoid = 500;
-float agentRad = 10;
-float goalSpeed = 100;
+static int PRM_MAX_NODES = 10;
 
 
-float sensingRadius = agentRad * 200;
-float radiusScaler = 0.9;
-
-//The agent states
-Vec2[] agentPos = new Vec2[maxNumAgents];
-Vec2[] agentVel = new Vec2[maxNumAgents];
-Vec2[] agentAcc = new Vec2[maxNumAgents];
-
-// Neighbors
-ArrayList<ArrayList<Integer>> neighbors = new ArrayList<ArrayList<Integer>>();
-
-//The agent goals
-Vec2[] goalPos = new Vec2[maxNumAgents];
-
-
+int strokeWidth = 2;
 void setup(){
   size(850,650,P2D);
+  windowTitle("Full crowd simulation with collision avoidance and motion planning");
   reset();
 }
+
+
 
 
 void reset() {
@@ -38,14 +25,20 @@ void reset() {
   goalCount = 0;
   neighbors.clear();
   
+  boxes[0] = new Box(new Vec2(width/2, 30), 20, 100);
+  boxes[1] = new Box(new Vec2(width/2, height-100), 20, 100);
+  
   // Set initial agent positions and goals
-  for (int i = 0; i < numAgents; i++)
+  for (int i = 0; i < numAgents; i++){
     createRandomAgent(i);
+    agentRads[i] = agentRad;
+  }
   
   // Obstacles
-  for (int i = numAgents; i < maxNumAgents; i++)
+  for (int i = numAgents; i < maxNumAgents; i++) {
     createRandomAgent(i);
- 
+    agentRads[i] = random(agentRad/2, agentRad*3);
+  }
  
   //Set initial velocities to cary agents towards their goals
   for (int i = 0; i < maxNumAgents; i++){
@@ -58,23 +51,21 @@ void reset() {
   for (int i = 0; i < numAgents; i++){
     neighbors.add(new ArrayList<Integer>());
   }
+  
+  for (int i = 0; i < numAgents; i++) {
+    prms[i] = new PRM(PRM_MAX_NODES, agentPos[i], goalPos[i]);
+    //prms[i].buildPRM(agentPos, agentRads, maxNumAgents, boxes, numBoxes);
+    prms[i].createRandomPath(agentPos[i], goalPos[i], 50);
+    goalPos[i] = prms[i].pathRandom.get(0);
+    //prms[i].runBFS();
+  }
+  
+  
+  
 }
 
-void updateNeighbors(){
-    for (int i = 0; i < numAgents; i++){
-        neighbors.get(i).clear();
-        for (int j = 0; j < maxNumAgents; j++){
-            if (i == j) continue;
-            float dist = agentPos[i].minus(agentPos[j]).length();
-            if (dist < sensingRadius) { //<>//
-                neighbors.get(i).add(j);
-            }   
-        }
-    }
-}
-
-
-boolean paused = true;
+ //<>//
+boolean paused = false;
 boolean resetMap = false;
 
 void draw(){
@@ -93,7 +84,14 @@ void draw(){
   
   //Update agent if not paused
   if (!paused){
+    //for (int i = 0; i < numAgents; i++){
+    //  prms[i].fixPRM(agentPos, agentRads, maxNumAgents, boxes, numBoxes);
+    //}
     moveAgent(1.0/frameRate);
+  }
+  
+  for (int i = 0; i < numAgents; i++) {
+    prms[i].draw();
   }
  
   //Draw orange goal rectangle
@@ -112,7 +110,7 @@ void draw(){
     // Draw agents and arrows
     strokeWeight(0.1);
     fill(20,200,150);
-    circle(agentPos[i].x, agentPos[i].y, agentRad*2*radiusScaler);
+    circle(agentPos[i].x, agentPos[i].y, agentRads[i]*2*radiusScaler);
     drawArrowHead(agentPos[i], goalPos[i]);
     
     // Draw lines to show agents path to goal
@@ -126,8 +124,17 @@ void draw(){
   fill(200,30,30); 
   circle(195, 15, 20);
   for (int i = numAgents; i < maxNumAgents; i++){
-    circle(agentPos[i].x, agentPos[i].y, agentRad*2*radiusScaler);
+    if (i % 2 == 0)
+      circle(agentPos[i].x, agentPos[i].y, agentRads[i]*2*radiusScaler);
+    else
+      rect(agentPos[i].x, agentPos[i].y, agentRads[i]*0.8*radiusScaler, agentRads[i]*0.8*radiusScaler);  
   }
+  
+  //Draw the green agents
+  fill(0); text("Future goals", 300, 20);
+  stroke(20,30,150,20);
+  circle(295, 15, 5); //<>//
+  
   
 }
 

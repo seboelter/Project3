@@ -9,14 +9,22 @@ int MIN_DISTANCE_SCALER = 4;
 boolean unusedPosition(Vec2 pos) 
 {
   for (int i = 0; i < agentCount; i++) {
-    if (pos.distanceTo(agentPos[i]) < MIN_DISTANCE_SCALER * agentRad)
+    if (pos.distanceTo(agentPos[i]) < MIN_DISTANCE_SCALER * agentRad + 2*agentRads[i]) {
       return false;
+    }
   }
       
   for (int i = 0; i < goalCount; i++) {
-    if (pos.distanceTo(goalPos[i]) < MIN_DISTANCE_SCALER * agentRad)
+    if (pos.distanceTo(goalPos[i]) < MIN_DISTANCE_SCALER * agentRad + 2*agentRads[i])
       return false;
   }
+  
+  //for (Box b : boxes) {
+  //  if (pointInBox(new Box(b.topLeft, b.w+agentRad, b.h+agentRad), pos))
+  //  //if (pointInBox(b, pos))
+  //    return false;
+  //}
+  
   
   return true;
 }
@@ -50,6 +58,8 @@ void createRandomAgent(int id)
     // This ensure that they don't have to move.
     goalPos[id] = agentPos[id];
   }
+  goalPosInit[id] = goalPos[id];
+  
   agentCount++;
   goalCount++;
 }

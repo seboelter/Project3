@@ -1,3 +1,51 @@
+
+int agentCount = 0;
+int goalCount = 0;
+
+
+float k_goal = 40;
+float k_avoid = 600;
+float agentRad = 10;
+float goalSpeed = 80;
+
+
+float sensingRadius = agentRad * 30;
+float radiusScaler = 0.9;
+
+//The agent states
+Vec2[] agentPos = new Vec2[maxNumAgents];
+Vec2[] agentVel = new Vec2[maxNumAgents];
+Vec2[] agentAcc = new Vec2[maxNumAgents];
+
+float[] agentRads = new float[maxNumAgents];
+
+
+// Neighbors
+ArrayList<ArrayList<Integer>> neighbors = new ArrayList<ArrayList<Integer>>();
+
+//The agent goals
+Vec2[] goalPosInit = new Vec2[maxNumAgents];
+Vec2[] goalPos = new Vec2[maxNumAgents];
+
+PRM[] prms = new PRM[numAgents];
+
+
+void updateNeighbors(){
+    for (int i = 0; i < numAgents; i++){
+        neighbors.get(i).clear();
+        for (int j = 0; j < maxNumAgents; j++){
+            if (i == j) continue;
+            float dist = agentPos[i].minus(agentPos[j]).length();
+            if (dist < sensingRadius) {
+                neighbors.get(i).add(j);
+            }   
+        }
+    }
+}
+
+
+
+
 //Return at what time agents 1 and 2 collide if they keep their current velocities
 // or -1 if there is no collision.
 float computeTTC(Vec2 pos1, Vec2 vel1, float radius1, Vec2 pos2, Vec2 vel2, float radius2){
@@ -12,6 +60,7 @@ float computeTTC(Vec2 pos1, Vec2 vel1, float radius1, Vec2 pos2, Vec2 vel2, floa
   float ttc = rayCircleIntersectTime(pos2, combined_radius, pos1, relative_velocity);
   return ttc;
 }
+
 
 // Compute attractive forces to draw agents to their goals,
 // and avoidance forces to anticipatory avoid collisions
@@ -35,9 +84,18 @@ Vec2 computeAgentForces(int id){
     
     if (id == j) continue;
     
-    ttc = computeTTC(agentPos[id], agentVel[id], agentRad, agentPos[j], agentVel[j], agentRad);
+    ttc = computeTTC(agentPos[id], agentVel[id], agentRads[id], agentPos[j], agentVel[j], agentRads[j]);
   
-    // If no collision continue
+    // Resolve collision
+    if (ttc < 0.01 && ttc >= 0 && j < numAgents && id < numAgents) {
+      //continue;
+      Vec2 dist = agentPos[id].minus(agentPos[j]);
+      float overlap = agentRads[id] + agentRads[j] - dist.length();
+      Vec2 dir = dist.normalized();
+      agentPos[id] = agentPos[id].minus(dir.times(overlap/1.9));
+      agentPos[j] = agentPos[j].plus(dir.times(overlap/1.9));
+    }
+    // If not collision continue
     if (ttc < 0) continue;
 
     // Collision Avoidance force
@@ -61,13 +119,25 @@ void moveAgent(float dt)
   // Precompute all the neighbors
   updateNeighbors();
   
+  // Update agents goal based on path calculated using RRT
+  for (int i = 0; i < numAgents; i++) {
+    if (agentPos[i].distanceTo(goalPos[i]) < 1) {
+      
+      if (!prms[i].pathRandom.isEmpty())
+        prms[i].pathRandom.remove(0);
+      if (!prms[i].pathRandom.isEmpty())
+        goalPos[i] = prms[i].pathRandom.get(0);
+    }
+    
+  }
+  
   //Compute accelerations for every agents
-  for (int i = 0; i < maxNumAgents; i++){
+  for (int i = 0; i < numAgents; i++){
     agentAcc[i] = computeAgentForces(i);
   }
 
   //Update position and velocity using (Eulerian) numerical integration
-  for (int i = 0; i < maxNumAgents; i++){
+  for (int i = 0; i < numAgents; i++){
     agentVel[i].add(agentAcc[i].times(dt));
     agentPos[i].add(agentVel[i].times(dt));
   }
