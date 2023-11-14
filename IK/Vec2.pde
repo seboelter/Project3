@@ -22,6 +22,10 @@ public class Vec2 {
     return new Vec2(x+rhs.x, y+rhs.y);
   }
   
+  public float lengthSqr(){
+    return x*x+y*y;
+  }
+  
   public void add(Vec2 rhs){
     x += rhs.x;
     y += rhs.y;
